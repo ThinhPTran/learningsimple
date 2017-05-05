@@ -6,7 +6,9 @@
 
   :dependencies [[org.clojure/clojure "1.8.0" :scope "provided"]
                  [org.clojure/clojurescript "1.9.495" :scope "provided"]
-                 [reagent "0.6.1"]]
+                 [reagent "0.6.1"]
+                 [datascript "0.16.1"]
+                 [datascript-transit "0.2.2"]]
 
   :plugins [[lein-cljsbuild "1.1.5"]
             [lein-figwheel "0.5.9"]]
