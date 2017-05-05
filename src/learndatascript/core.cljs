@@ -45,7 +45,7 @@
   (.log js/console "inside-foocount")
   [:div (str "count value: " @foocount-cursor)
    [:input {:type "button" :value "Click me!"
-            :on-click #(swap! app-state assoc-in [:foo :count] (rand))}]])
+            :on-click #(swap! foocount-cursor inc)}]])
 
 (defn home-page []
   [:div
