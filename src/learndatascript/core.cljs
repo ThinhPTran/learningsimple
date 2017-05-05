@@ -2,11 +2,13 @@
     (:require [reagent.core :as reagent]))
 
 (defonce app-state (reagent/atom {:foo {:bar "Hello, world!"
-                                        :baz {:quux "Woot"}}}))
+                                        :baz {:quux "Woot"}
+                                        :count 0}}))
 (def foo-cursor (reagent/cursor app-state [:foo]))
 (def foobar-cursor (reagent/cursor app-state [:foo :bar]))
 (def foobaz-cursor (reagent/cursor app-state [:foo :baz]))
 (def foobazquux-cursor (reagent/cursor app-state [:foo :baz :quux]))
+(def foocount-cursor (reagent/cursor app-state [:foo :count]))
 
 ;; -------------------------
 ;; Views
@@ -31,6 +33,19 @@
   (.log js/console "inside-foobazquux-cursor")
   [:div (str "Inside foobazquux-cursor: " @foobazquux-cursor)])
 
+(defn simple-component []
+  (.log js/console "simple-component")
+  [:div
+   [:p "I am a component!"]
+   [:p.someclass
+    "I have " [:strong "bold"]
+    [:span {:style {:color "red"}} " and red "] "text."]])
+
+(defn inside-foocount []
+  (.log js/console "inside-foocount")
+  [:div (str "count value: " @foocount-cursor)
+   [:input {:type "button" :value "Click me!"
+            :on-click #(swap! app-state assoc-in [:foo :count] (rand))}]])
 
 (defn home-page []
   [:div
@@ -39,7 +54,9 @@
    [inside-foo-cursor]
    [inside-foobar-cursor]
    [inside-foobaz-cursor]
-   [inside-foobazquux-cursor]])
+   [inside-foobazquux-cursor]
+   [simple-component]
+   [inside-foocount]])
 
 ;; -------------------------
 ;; Initialize app
