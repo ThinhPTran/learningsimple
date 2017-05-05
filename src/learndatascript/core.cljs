@@ -25,7 +25,7 @@
 ;;; execute query: q-young, passing 18 as min-age
 (defn queryfunc [inval]
   (d/q q-young @conn inval))
-;
+
 ;;; Query Result
 ;;; => [["Sally"]]
 
@@ -35,7 +35,8 @@
 (defonce app-state (reagent/atom {:foo {:bar "Hello, world!"
                                         :baz {:quux "Woot"}
                                         :count 0}
-                                  :data nil}))
+                                  :data nil
+                                  :database nil}))
 
 (def foo-cursor (reagent/cursor app-state [:foo]))
 (def foobar-cursor (reagent/cursor app-state [:foo :bar]))
@@ -43,23 +44,40 @@
 (def foobazquux-cursor (reagent/cursor app-state [:foo :baz :quux]))
 (def foocount-cursor (reagent/cursor app-state [:foo :count]))
 (def data-cursor (reagent/cursor app-state [:data]))
+(def database-cursor (reagent/cursor app-state [:database]))
 
 ;; -------------------------
 ;; Handler
+(defn get-datoms [conn]
+  (->> @conn
+       (.-eavt)
+       (-seq)
+       (.-keys)
+       (js->clj)
+       (reduce #(conj
+                  %1
+                  {:e (.-e %2)
+                   :a (.-name (.-a %2))
+                   :v (.-v %2)
+                   :tx (.-tx %2)
+                   :add (.-added %2)})
+               [])))
+
 (let [result (vec (queryfunc 40))]
-  (swap! app-state assoc :data result))
+  (swap! app-state assoc :data result)
+  (swap! app-state assoc :database (get-datoms conn)))
 
 (defn handleaddperson []
-  (.log js/console "handle adding a new person!!!")
   (let [datom [{:db/id -1 :name (str "Thinh" (rand-int 1000)) :age (rand-int 50)}]
         tmp (d/transact! conn datom)
         result (vec (queryfunc 40))]
-    (swap! app-state assoc :data result)))
-
+    (swap! app-state assoc :data result)
+    (swap! app-state assoc :database (get-datoms conn)))
+  (.log js/console "handle adding a new person!!!")
+  (.log js/console "db: " (str @database-cursor)))
 
 ;; -------------------------
 ;; Views
-
 (defn inside-app-state []
   (.log js/console "inside-app-state")
   [:div (str "Inside app-state: " @app-state)])
@@ -100,6 +118,10 @@
    [:input {:type "button" :value "Create a new person!"
             :on-click #(handleaddperson)}]])
 
+(defn inside-database []
+  (.log js/console "inside-database")
+  [:div (str "inside database: " @database-cursor)])
+
 (defn home-page []
   [:div
    [:h2 "Welcome to my Datascript experiment"]
@@ -110,7 +132,8 @@
    [inside-foobazquux-cursor]
    [simple-component]
    [inside-foocount]
-   [inside-data]])
+   [inside-data]
+   [inside-database]])
 
 ;; -------------------------
 ;; Initialize app
