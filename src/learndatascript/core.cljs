@@ -48,20 +48,21 @@
 
 ;; -------------------------
 ;; Handler
+;(defn get-datoms [conn]
+;  (->> @conn
+;       (.-eavt)))
+;       ;(-seq)
+;       ;(.-keys)
+;       ;(js->clj)
+;       ;(mapv #({:e (.-e %2)
+;       ;         :a (.-name (.-a %2))
+;       ;         :v (.-v %2)
+;       ;         :tx (.-tx %2)
+;       ;         :add (.-added %2)}))))
+
+
 (defn get-datoms [conn]
-  (->> @conn
-       (.-eavt)
-       (-seq)
-       (.-keys)
-       (js->clj)
-       (reduce #(conj
-                  %1
-                  {:e (.-e %2)
-                   :a (.-name (.-a %2))
-                   :v (.-v %2)
-                   :tx (.-tx %2)
-                   :add (.-added %2)})
-               [])))
+  (mapv #(zipmap [:e :a :v :t :add] %) (:eavt @conn)))
 
 (let [result (vec (queryfunc 40))]
   (swap! app-state assoc :data result)
